@@ -31,7 +31,7 @@ public class RedisReliableQueue<V> {
 
     public void push(RedisTask<V> task) {
         redisTemplate.multi();
-        saveTaskInfo(task);
+        saveTask(task);
         redisTemplate.opsForList().leftPush(taskQueue, task.getTaskId());
         redisTemplate.exec();
     }
@@ -90,8 +90,12 @@ public class RedisReliableQueue<V> {
                 .collect(Collectors.toList());
     }
 
-    public void saveTaskInfo(RedisTask<V> task) {
+    public void saveTask(RedisTask<V> task) {
         redisTemplate.opsForValue().set(task.getTaskId(), task, task.getMetadata().getTaskExpireTime(), TimeUnit.SECONDS);
     }
 
+    @SuppressWarnings({"unchecked"})
+    public RedisTask<V> getTask(String taskId) {
+        return (RedisTask<V>) redisTemplate.opsForValue().get(taskId);
+    }
 }

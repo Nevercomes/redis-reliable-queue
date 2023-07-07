@@ -68,4 +68,13 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
     public void submit(RedisTask<V> task) {
         queue.push(task);
     }
+
+
+    public void saveTask(RedisTask<V> task) {
+        queue.saveTask(task);
+    }
+
+    public RedisTask<V> getTask(String taskId) {
+        return queue.getTask(taskId);
+    }
 }

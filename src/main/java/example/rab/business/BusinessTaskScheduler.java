@@ -19,5 +19,15 @@ public class BusinessTaskScheduler extends RedisTaskScheduler<BusinessTask> {
         BusinessTask task = redisTask.getTask();
         RedisTaskMetadata metadata = redisTask.getMetadata();
         log.info("task={}, metadata={}", task, metadata);
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        task.setStatus("finished");
+        redisTask.setTask(task);
+        this.saveTask(redisTask);
     }
 }
