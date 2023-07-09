@@ -25,42 +25,44 @@ public class RedisReliableQueue<V> {
         this.processingQueue = processingQueue;
         this.redisTemplate = redisTemplate;
         this.blockTimeout = 10;
-        log.info("init redis reliable queue with task_queue={}, processing_queue={}, block_timeout={} finished",
+        log.info("Init redis reliable queue with task_queue={}, processing_queue={}, block_timeout={} finished",
                 taskQueue, processingQueue, blockTimeout);
     }
 
     public void push(RedisTask<V> task) {
-        redisTemplate.multi();
         saveTask(task);
         redisTemplate.opsForList().leftPush(taskQueue, task.getTaskId());
-        redisTemplate.exec();
     }
 
     @SuppressWarnings({"unchecked"})
     public RedisTask<V> blockGet() {
         Object taskIdObj = redisTemplate.opsForList().rightPopAndLeftPush(taskQueue, processingQueue, blockTimeout, TimeUnit.SECONDS);
         if (ObjectUtils.isNotEmpty(taskIdObj)) {
+            log.info("read task={}", taskIdObj);
             String taskId = String.valueOf(taskIdObj);
-            RedisTask<V> task = (RedisTask<V>) redisTemplate.opsForValue().get(taskId);
-            if (ObjectUtils.isNotEmpty(task)) {
-                // update task processTime when it is taken, but is may not necessary
-                // because in most situation, the processTime is almost equal to the createTime
-                // so the update code has been removed
-                return task;
-            } else {
-                // Task has expired, remove the taskId from processingQueue
-                redisTemplate.opsForList().remove(processingQueue, 1, taskId);
+            try {
+                RedisTask<V> task = (RedisTask<V>) redisTemplate.opsForValue().get(taskId);
+                if (ObjectUtils.isNotEmpty(task)) {
+                    // update task processTime when it is taken, but is may not necessary
+                    // because in most situation, the processTime is almost equal to the createTime
+                    // so the update code has been removed
+                    return task;
+                } else {
+                    // Task has expired, remove the taskId from processingQueue
+                    redisTemplate.opsForList().remove(processingQueue, 1, taskId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
+        log.info("task read timeout");
         return null;
     }
 
     public void ack(RedisTask<V> task) {
         String taskId = task.getTaskId();
-        redisTemplate.multi();
         redisTemplate.expire(taskId, task.getMetadata().getFinishedTaskExpireTime(), TimeUnit.SECONDS);
         redisTemplate.opsForList().remove(processingQueue, 1, taskId);
-        redisTemplate.exec();
     }
 
     public void nack(RedisTask<V> task) {

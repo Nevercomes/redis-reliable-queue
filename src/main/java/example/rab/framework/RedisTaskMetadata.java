@@ -1,5 +1,6 @@
 package example.rab.framework;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import org.apache.commons.lang3.ObjectUtils;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RedisTaskMetadata {
+public class RedisTaskMetadata implements Serializable {
 
     @Builder.Default
     private String taskId = String.valueOf(UUID.randomUUID());

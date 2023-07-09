@@ -1,5 +1,6 @@
 package example.rab.business;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BusinessTask {
+public class BusinessTask implements Serializable {
 
     private String status;
 

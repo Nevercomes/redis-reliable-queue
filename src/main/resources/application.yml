@@ -5,18 +5,3 @@ application:
       max-size: 20
       idle-time: 60
       queue-capacity: 100
-
-
-redis:
-  mode: standalone # or sentinel
-  database: 0
-  standalone:
-    host: localhost
-    port: 26379
-  timeout: 10s
-  lettuce:
-    pool:
-      min-idle: 0
-      max-idle: 8
-      max-active: 8
-      max-wait: -1ms

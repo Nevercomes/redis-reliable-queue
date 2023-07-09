@@ -1,5 +1,6 @@
 package example.rab.framework;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.NonNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
-public class RedisTask<V> {
+public class RedisTask<V> implements Serializable {
 
     private V task;
 

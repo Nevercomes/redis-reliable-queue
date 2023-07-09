@@ -23,6 +23,7 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
     @SuppressWarnings({"InfiniteLoopStatement"})
     @Override
     public void run() {
+        log.info("Start to listen redis task...");
         long checkInterval = 60000;
         long lastCheckTime = Instant.now().toEpochMilli();
         while (true) {
@@ -57,11 +58,15 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
     private void checkProcessingTasks() {
         // Check if there are any tasks that have been processing for too long
         // If so, nack them back to the task queue for reprocessing
-        List<RedisTask<V>> processingTasks = queue.getAllProcessingTasks();
-        for (RedisTask<V> task : processingTasks) {
-            if (task.getMetadata().isTaskProcessTimeout()) {
-                queue.nack(task);
+        try {
+            List<RedisTask<V>> processingTasks = queue.getAllProcessingTasks();
+            for (RedisTask<V> task : processingTasks) {
+                if (task.getMetadata().isTaskProcessTimeout()) {
+                    queue.nack(task);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
