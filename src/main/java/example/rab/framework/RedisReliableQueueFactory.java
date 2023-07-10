@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class RedisReliableQueueFactory {
 
-    @Resource
-    private RedisTemplate<String, Object> redisTemplateWithTx;
+    @Resource(name = "redisTemplateJdkSerializer")
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public <V> RedisReliableQueue<V> create(String taskQueue, String processingQueue) {
-        return new RedisReliableQueue<>(taskQueue, processingQueue, redisTemplateWithTx);
+    public <V> RedisReliableQueue<V> create(String taskQueue, String processingQueue, String taskKeyPrefix) {
+        return new RedisReliableQueue<>(taskQueue, processingQueue, taskKeyPrefix, redisTemplate);
     }
 
 }

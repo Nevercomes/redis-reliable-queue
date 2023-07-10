@@ -16,13 +16,16 @@ public class RedisReliableQueue<V> {
 
     private final String processingQueue;
 
+    private final String taskKeyPrefix;
+
     private final Integer blockTimeout;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public RedisReliableQueue(String taskQueue, String processingQueue, RedisTemplate<String, Object> redisTemplate) {
+    public RedisReliableQueue(String taskQueue, String processingQueue, String taskKeyPrefix, RedisTemplate<String, Object> redisTemplate) {
         this.taskQueue = taskQueue;
         this.processingQueue = processingQueue;
+        this.taskKeyPrefix = taskKeyPrefix;
         this.redisTemplate = redisTemplate;
         this.blockTimeout = 10;
         log.info("Init redis reliable queue with task_queue={}, processing_queue={}, block_timeout={} finished",
@@ -30,8 +33,8 @@ public class RedisReliableQueue<V> {
     }
 
     public void push(RedisTask<V> task) {
-        saveTask(task);
-        redisTemplate.opsForList().leftPush(taskQueue, task.getTaskId());
+        saveTaskInfo(task);
+        redisTemplate.opsForList().leftPush(taskQueue, constructTaskId(task.getTaskId()));
     }
 
     @SuppressWarnings({"unchecked"})
@@ -52,7 +55,7 @@ public class RedisReliableQueue<V> {
                     redisTemplate.opsForList().remove(processingQueue, 1, taskId);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("occurs error while block get, exception:{}", e.getMessage());
             }
         }
         log.info("task read timeout");
@@ -60,14 +63,14 @@ public class RedisReliableQueue<V> {
     }
 
     public void ack(RedisTask<V> task) {
-        String taskId = task.getTaskId();
+        String taskId = constructTaskId(task.getTaskId());
         redisTemplate.expire(taskId, task.getMetadata().getFinishedTaskExpireTime(), TimeUnit.SECONDS);
         redisTemplate.opsForList().remove(processingQueue, 1, taskId);
     }
 
     public void nack(RedisTask<V> task) {
         // TODO transaction and concurrent control
-        String taskId = task.getTaskId();
+        String taskId = constructTaskId(task.getTaskId());
         Long removed = redisTemplate.opsForList().remove(processingQueue, 1, taskId);
         if (ObjectUtils.isNotEmpty(removed) && removed > 0) {
             redisTemplate.expire(taskId, task.getMetadata().getTaskExpireTime(), TimeUnit.SECONDS);
@@ -92,12 +95,16 @@ public class RedisReliableQueue<V> {
                 .collect(Collectors.toList());
     }
 
-    public void saveTask(RedisTask<V> task) {
-        redisTemplate.opsForValue().set(task.getTaskId(), task, task.getMetadata().getTaskExpireTime(), TimeUnit.SECONDS);
+    public void saveTaskInfo(RedisTask<V> task) {
+        redisTemplate.opsForValue().set(constructTaskId(task.getTaskId()), task, task.getMetadata().getTaskExpireTime(), TimeUnit.SECONDS);
     }
 
     @SuppressWarnings({"unchecked"})
-    public RedisTask<V> getTask(String taskId) {
-        return (RedisTask<V>) redisTemplate.opsForValue().get(taskId);
+    public RedisTask<V> getTaskInfo(String taskId) {
+        return (RedisTask<V>) redisTemplate.opsForValue().get(constructTaskId(taskId));
+    }
+
+    private String constructTaskId(String taskId) {
+        return taskKeyPrefix + taskId;
     }
 }

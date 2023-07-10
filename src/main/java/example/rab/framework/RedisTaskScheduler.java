@@ -58,15 +58,11 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
     private void checkProcessingTasks() {
         // Check if there are any tasks that have been processing for too long
         // If so, nack them back to the task queue for reprocessing
-        try {
-            List<RedisTask<V>> processingTasks = queue.getAllProcessingTasks();
-            for (RedisTask<V> task : processingTasks) {
-                if (task.getMetadata().isTaskProcessTimeout()) {
-                    queue.nack(task);
-                }
+        List<RedisTask<V>> processingTasks = queue.getAllProcessingTasks();
+        for (RedisTask<V> task : processingTasks) {
+            if (task.getMetadata().isTaskProcessTimeout()) {
+                queue.nack(task);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -76,10 +72,10 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
 
 
     public void saveTask(RedisTask<V> task) {
-        queue.saveTask(task);
+        queue.saveTaskInfo(task);
     }
 
     public RedisTask<V> getTask(String taskId) {
-        return queue.getTask(taskId);
+        return queue.getTaskInfo(taskId);
     }
 }

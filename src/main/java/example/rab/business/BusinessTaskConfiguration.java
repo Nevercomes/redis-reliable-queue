@@ -22,8 +22,8 @@ public class BusinessTaskConfiguration {
 
     @Bean
     public BusinessTaskScheduler businessTaskExecutor() {
-        RedisReliableQueue<BusinessTask> queue = queueFactory.create("business_task_queue",
-                "business_processing_queue");
+        RedisReliableQueue<BusinessTask> queue = queueFactory.create("reliable_queue:task_queue:business",
+                "reliable_queue:processing_queue:business", "reliable_queue:task:business:");
         BusinessTaskScheduler scheduler = new BusinessTaskScheduler(queue, executor);
         threadPool.submit(scheduler);
         return scheduler;
