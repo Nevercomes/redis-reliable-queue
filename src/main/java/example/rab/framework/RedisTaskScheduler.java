@@ -58,9 +58,11 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
     private void checkProcessingTasks() {
         // Check if there are any tasks that have been processing for too long
         // If so, nack them back to the task queue for reprocessing
+        log.info("finding whether there is a timeout task");
         List<RedisTask<V>> processingTasks = queue.getAllProcessingTasks();
         for (RedisTask<V> task : processingTasks) {
             if (task.getMetadata().isTaskProcessTimeout()) {
+                log.warn("find processing timeout task={}", task.getMetadata());
                 queue.nack(task);
             }
         }

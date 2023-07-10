@@ -21,7 +21,7 @@ public class BusinessTaskScheduler extends RedisTaskScheduler<BusinessTask> {
         log.info("task={}, metadata={}", task, metadata);
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(20000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
