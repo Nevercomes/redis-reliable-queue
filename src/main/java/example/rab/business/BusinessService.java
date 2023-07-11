@@ -19,7 +19,7 @@ public class BusinessService {
                 .status("prepared")
                 .build();
         RedisTaskMetadata metadata = RedisTaskMetadata.builder()
-                .taskName("business-task")
+                .taskName(BusinessConstants.TASK_NAME)
                 .build();
         RedisTask<BusinessTask> redisTask = RedisTask.<BusinessTask>builder()
                 .task(task)
