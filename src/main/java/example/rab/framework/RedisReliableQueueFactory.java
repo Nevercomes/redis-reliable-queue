@@ -18,7 +18,7 @@ public class RedisReliableQueueFactory {
 
     public <V> RedisReliableQueue<V> create(String taskName) {
         String taskQueue = TASK_QUEUE_PREFIX + taskName;
-        String processingQueue = PROCESSING_QUEUE_PREFIX + taskQueue;
+        String processingQueue = PROCESSING_QUEUE_PREFIX + taskName;
         String taskKeyPrefix = TASK_METADATA_KEY_PREFIX + taskName + ":";
         return new RedisReliableQueue<>(taskQueue, processingQueue, taskKeyPrefix, redisTemplate);
     }
