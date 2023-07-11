@@ -18,7 +18,7 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
         this.executor = executor;
     }
 
-    protected abstract void executeTask(RedisTask<V> task);
+    protected abstract boolean executeTask(RedisTask<V> task);
 
     @SuppressWarnings({"InfiniteLoopStatement"})
     @Override
@@ -47,8 +47,11 @@ public abstract class RedisTaskScheduler<V> implements Runnable {
 
     private void handleTask(RedisTask<V> task) {
         try {
-            executeTask(task);
-            queue.ack(task);
+            if (executeTask(task)) {
+                queue.ack(task);
+            } else {
+                queue.nack(task);
+            }
         } catch (Exception e) {
             log.error("task={} execute occurs exception: {}", task.getMetadata(), e.getMessage());
             queue.nack(task);

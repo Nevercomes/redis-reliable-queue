@@ -10,6 +10,7 @@
   - Includes wrapped acknowledgement (ack) and non-acknowledgement (nack) methods.
   - Features processing task timeout checks (Note: your application must support multiple instances).
   - Provides fast expiration for completed tasks.
+  - Supports set max retry times for failed tasks.
   - Supports customized task objects.
   - Offers the capability to save task metadata independently.
 - Spring Background Task Using Redis:

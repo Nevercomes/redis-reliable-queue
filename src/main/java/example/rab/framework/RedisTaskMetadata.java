@@ -22,10 +22,22 @@ public class RedisTaskMetadata implements Serializable {
     private String taskName = "redis-task";
 
     @Builder.Default
+    // 1hour
     private Integer taskExpireTime = 3600;
 
     @Builder.Default
+    // 30s
     private Integer finishedTaskExpireTime = 30;
+
+    @Builder.Default
+    // 7 days
+    private Integer failedTaskExpireTime = 7 * 24 *3600;
+
+    @Builder.Default
+    private Integer retryCount = 0;
+
+    @Builder.Default
+    private Integer retryMax = 3;
 
     @Builder.Default
     private Integer processTimeout = 180;

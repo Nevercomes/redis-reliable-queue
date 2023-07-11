@@ -75,9 +75,19 @@ public class RedisReliableQueue<V> {
     public void nack(RedisTask<V> task) {
         String taskId = task.getTaskId();
         String metadataKey = constructTaskMetadataKey(taskId);
+        log.info("nack task={}", metadataKey);
         Long removed = redisTemplate.opsForList().remove(processingQueue, 1, taskId);
         if (ObjectUtils.isNotEmpty(removed) && removed > 0) {
-            redisTemplate.expire(metadataKey, task.getMetadata().getTaskExpireTime(), TimeUnit.SECONDS);
+            log.info("removed task={} from processing queue", metadataKey);
+            int retryCount = task.getMetadata().getRetryCount() + 1;
+            if (retryCount > task.getMetadata().getRetryMax()) {
+                log.error("task={} has reached retry max, it will be discarded, "
+                        + "but its metadata will be save in cache", task.getMetadata());
+                redisTemplate.expire(metadataKey, task.getMetadata().getFailedTaskExpireTime(), TimeUnit.SECONDS);
+                return;
+            }
+            task.getMetadata().setRetryCount(retryCount);
+            saveTaskInfo(task);
             redisTemplate.opsForList().leftPush(taskQueue, taskId);
         }
     }

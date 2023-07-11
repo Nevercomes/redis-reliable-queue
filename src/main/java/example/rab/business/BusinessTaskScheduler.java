@@ -15,7 +15,7 @@ public class BusinessTaskScheduler extends RedisTaskScheduler<BusinessTask> {
     }
 
     @Override
-    protected void executeTask(RedisTask<BusinessTask> redisTask) {
+    protected boolean executeTask(RedisTask<BusinessTask> redisTask) {
         BusinessTask task = redisTask.getTask();
         RedisTaskMetadata metadata = redisTask.getMetadata();
         log.info("task={}, metadata={}", task, metadata);
@@ -29,5 +29,6 @@ public class BusinessTaskScheduler extends RedisTaskScheduler<BusinessTask> {
         task.setStatus("finished");
         redisTask.setTask(task);
         this.saveTask(redisTask);
+        return true;
     }
 }
