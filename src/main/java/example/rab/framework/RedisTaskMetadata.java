@@ -38,7 +38,7 @@ public class RedisTaskMetadata implements Serializable {
 
     public boolean isTaskProcessTimeout() {
         Long time = ObjectUtils.isNotEmpty(processTime) ? processTime : createTime;
-        return time + processTimeout * 1000 > Instant.now().toEpochMilli();
+        return time + processTimeout * 1000 <= Instant.now().toEpochMilli();
     }
 
 }
